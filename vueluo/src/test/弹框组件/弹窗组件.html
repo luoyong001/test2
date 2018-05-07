@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+  <script src="../vue.js"></script>
+  <style>
+    /*共用css*/
+    body,div,a,span,i,em,h1,h2,h3,h4,h5,h6,hr,p,blockquote,dl,dt,dd,ul,ol,li,pre,form,fieldset,legend,button,input,textarea,th,td,section{margin:0;padding:0;
+      -moz-box-sizing: border-box;  /*Firefox3.5+*/
+      -webkit-box-sizing: border-box; /*Safari3.2+*/
+      -o-box-sizing: border-box; /*Opera9.6*/
+      -ms-box-sizing: border-box; /*IE8*/
+      box-sizing: border-box }
+    html{color:#000;height: 100%;overflow-y:scroll;overflow:-moz-scrollbars-vertical}
+    body,button,input,select,textarea{font-size:12px;font-family:'PingFangSC','PingFang SC',Tahoma,Arial,\5FAE\8F6F\96C5\9ED1,sans-serif;}
+    .popWindow{;width: 100%;height: 100%;position: fixed;top: 0px;left: 0px;z-index: 10;background: rgba(0,0,0,0.50);}
+    .threeDIV{padding-left: 30px;width: 290px;margin-top: 20px;}
+    .threeDIV span{font-size: 12px;color: #333333;display: inline-block;text-align: right;width:60px;height: 32px;line-height: 32px;vertical-align: middle}
+    .popWindow .threeDIV input[type='password']{border: 1px solid #D2D2D2;border-radius: 3px;font-size: 12px;color: #333333;width: 180px;height: 32px;padding-left: 5px;margin-left: 16px;vertical-align: middle}
+    .threeDIVbtn{margin-top: 20px;text-align: center;}
+    .threeDIVbtn .cancle{width: 108px;height:40px;background: #FCFCFC;  border: 1px solid #DBDBDB;  box-shadow: 0 4px 6px 0 rgba(0,0,0,0.11); -webkit-box-shadow: 0 4px 6px 0 rgba(0,0,0,0.11); -moz-box-shadow: 0 4px 6px 0 rgba(0,0,0,0.11); -o-box-shadow: 0 4px 6px 0 rgba(0,0,0,0.11); -ms-box-shadow: 0 4px 6px 0 rgba(0,0,0,0.11);  border-radius: 100px;font-size: 14px;color: #666666;}
+    .threeDIVbtn .sureUpdataPassword{margin-left: 20px;width: 108px;height:40px;opacity: 0.9;  background: #C61777;  box-shadow: 0 4px 6px 0 rgba(152,26,89,0.40); -webkit-box-shadow: 0 4px 6px 0 rgba(152,26,89,0.40);-moz-box-shadow: 0 4px 6px 0 rgba(152,26,89,0.40);-o-box-shadow: 0 4px 6px 0 rgba(152,26,89,0.40);-ms-box-shadow: 0 4px 6px 0 rgba(152,26,89,0.40); border-radius: 100px;font-size: 14px;  color: #FFFFFF;}
+
+    .canclecon p,.resultTS p{font-size: 16px;color: #333333;margin-top: 30px;text-align: center;}
+    .canclecon{;background: #FFFFFF;box-shadow: 0 0 22px 0 rgba(0,0,0,0.20);  border-radius: 8px;width: 320px;padding-bottom: 20px;position: absolute;top: 50%;margin-top: -153px;margin-left: -160px;left: 50%;}
+    .updatepop h2,.canclecon h2,.headerupPOP h2{padding-left: 30px;font-size: 15px;color: #333333; background: rgba(204,204,204,.3);  border-radius: 8px 8px 0 0;height: 50px;line-height: 50px;}
+
+
+  </style>
+</head>
+<body>
+
+<div class="popWindow" id="tsmodel">
+   <vue-model title="确认弹窗2" content="你确定要删除么？" surebtn="确定2" canclebtn="关闭" @close-pop="closeFun" @next-fun="nextFun">
+      <!--<div slot="modelcontent">1111</div>-->
+   </vue-model>
+
+</div>
+
+</body>
+<script src="startvue.js"></script>
+
+</html>

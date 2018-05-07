@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>唤起实例</title>
+  <style>
+    *{font-size: 25px}
+  </style>
+</head>
+<body>
+<a href="javascript:app.openOrDownMigu('','programa=topicdetail&h5URL=/app/v2/mod/third-party/hn/redirect.html')">唤起APP到指定网页</a>
+<a href="javascript:app.openOrDownMigu('','programa=mainplayer&contentid=600907000000982267')">唤起APP到单曲页面</a>
+<a href="javascript:app.openOrDownMigu('','programa=mvdetail&contentid=600906000000069792')">唤起APP到MV页面</a>
+<a href="javascript:app.openOrDownMigu('','programa=concertdetail&contentid=15270451')">唤起APP到直播页面</a>
+</body>
+</html>
+<script>
+
+
+
+</script>
+
+<script>
+
+  //此段JS为唤起APP逻辑处理
+  var app = {
+    ua: navigator.userAgent.toLowerCase(),
+    //快速判断UA信息
+    uais: function(name) {
+      var is = false;
+      var ua = this.ua;
+      switch (name) {
+        case 'wx':
+          is = this.uais('weixin');
+          break;
+        case 'weixin':
+          is = ua.match(/(micromessenger|qq|txmicroblog);?/i)
+          break;
+        case 'ios':
+          is = ua.match(/(iphone|ipod|ipad);?/i)
+          break;
+        //如果为咪咕客户端
+        case 'migu':
+          is = this.uais('android-migu') || this.uais('ios-migu');
+          break;
+        case 'android-migu':
+          is = window.migumusicjs ? true : location.href.match(/(ua=Android|ua=Android_sst);?/i);
+          break;
+        case 'ios-migu':
+          if(!window.migumusicjs)
+            is =  ua.match(/(mobilemusic);?/i) || location.href.match(/(ua=Iphone_Sst);?/i);
+          break;
+        default:
+          is = ua.indexOf(name) > -1;
+      }
+      return is;
+    },
+    getQueryString:function (name,url) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+      var r = window.location.search.substr(1).match(reg);
+      if(url){
+        var s = url.split('?');
+        r = s[1] ?s[1].match(reg):s[0].match(reg);
+      }
+      if (r != null) return unescape(r[2]); return null;
+    },
+    //获取当前设备系统
+    getOS: function() {
+      if (this.uais('ios'))
+        return 'ios';
+      if (this.uais('android'))
+        return 'android';
+      if (this.uais('windows'))
+        return 'windows';
+    },
+    //获取系统版本号
+    getOSVer: function() {
+      var u = this.ua;
+      var i = u.indexOf('iphone os ');
+      if (i > 0) {
+        var v = u.substring(i + 10,i+14);
+
+        if(v){
+          var vnum = v.replace('_','.');
+          if(vnum >7){
+            return vnum;
+          }
+        }
+      }
+      var i = u.indexOf('version/');
+      if (i > 0) {
+        var v = u.substring(i + 8).split(' ');
+        return v[0];
+      }
+    },
+    //尝试开启APP
+    tryOpen: function(appurl, fn) {
+      var me = this;
+      var beginTime = Date.now();
+      setTimeout(function() {
+        if (Date.now() - beginTime < 1100) {
+          fn && (fn(false));
+        } else {
+          //成功唤起
+          fn && (fn(true));
+        }
+      }, 1000)
+
+      //不支持Iframe开启对手机型号
+      var mobiles = ['samsung-sch', 'samsung-sm'];
+      for (var k in mobiles) {
+        if (this.uais(mobiles[k])) {
+          window.open(appurl);
+          return;
+        }
+      }
+      //ios 9
+      if (this.getOS() == 'ios' && this.getOSVer() >= 9) {
+        if (this.getOSVer() >= 9.2) {
+          //window.open(appurl);
+          location.href = appurl;
+        } else {
+          location.href = appurl;
+        }
+        return;
+      }
+      var iframe = document.createElement('iframe');
+      iframe.style.width = '0px';
+      iframe.style.height = '0px';
+      iframe.style.border = '0px';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      iframe.src = appurl;
+      //document.body.removeChild(iframe);
+      //延迟移除,否则可能会导致无法开启APP,
+      setTimeout(function() {
+        //document.body.removeChild(iframe);
+      }, 3000);
+    },
+    //开启咪咕,并回调fn, 可以传递URL
+    openMigu: function(fn, url) {
+
+      if (!url)
+        url = '';
+      var appUrl = this.uais('ios') ? 'migumusicios://browserJumper.do?' : 'migumusic://';
+
+
+      appUrl += url;
+      //appUrl += '&title=' + encodeURIComponent(document.title.split('-')[0]); //显示标题
+      //兼容新版IOS
+      if(this.uais('ios') ){
+        var programa = this.getQueryString('programa',appUrl);
+        var id = this.getQueryString('contentid',appUrl);
+
+        //跳转到H5页面处理
+        var match = appUrl.match(/h5URL=(.+)/);
+        var h5URL ='';
+        if(match){
+          h5URL = match && match[1];
+          if(h5URL && h5URL.indexOf('/') <4){
+            h5URL = 'http://a.mll.migu.cn'+h5URL;
+          }
+        }
+        var noencodeH5URL = h5URL;
+        h5URL = encodeURIComponent(h5URL);
+
+        switch(programa){
+          case 'mainplayer':
+            appUrl = 'mgmusic://song-player?id='+id;
+            break;
+          case 'orderdetail':
+            //appUrl = 'migumusicios://1.0/SongList?id='+id;
+            appUrl = 'mgmusic://song-list-info?id='+id;
+            break;
+          case 'albumdetail':
+            //appUrl = 'migumusicios://1.0/AlbumInfo?id='+X.getQueryString('albumId',appUrl);
+            appUrl = 'mgmusic://album-info?id='+this.getQueryString('albumId',appUrl);
+            break;
+          case 'singerdetail':
+            id = this.getQueryString('singerid',appUrl);
+            //appUrl = 'migumusicios://1.0/SingerInfo?id='+id;
+            appUrl = 'mgmusic://singer-info?id='+id
+            break;
+          case 'mvdetail':
+//					appUrl = 'migumusicios://1.0/MV?id='+id;
+            appUrl = 'mgmusic://mv-info?id='+id;
+            break;
+          case 'digitalcommonalbum': //数字专辑详情
+            appUrl = 'mgmusic://digital-album-info?id='+id;
+            break;
+          case 'digitalbuyalbum': //数字转接销售
+            h5URL = 'http://a.mll.migu.cn/app/v2/controller/digital-album/digital-album-sale.shtml?id='+id;
+            h5URL = encodeURIComponent(h5URL);
+            appUrl = 'mgmusic://browser?url='+h5URL;
+            break;
+          case 'concertdetail':
+//					appUrl = 'migumusicios://1.0/Concert?id='+id;
+            appUrl = 'mgmusic://concert-info?id='+id;
+            break;
+          case 'ringdetail':
+//					appUrl = 'migumusicios://1.0/ColorRing?id='+id;
+            appUrl = 'mgmusic://crbt-info?id='+id;
+            break;
+          case 'diyRingdetail':
+//					appUrl = 'migumusicios://1.0/DIYColorRing?id='+id;
+            appUrl = 'mgmusic://diy-crbt-info?id='+id;
+            break;
+          case 'personaFM':
+            appUrl = 'migumusicios://1.0/Radio?id='+id+'&type='+this.getQueryString('resource',appUrl);
+            //appUrl = 'migumusicios://1.0/Radio?id='+id+'&type='+X.getQueryString('resource',appUrl);
+            break;
+          case 'topicdetail':
+            //appUrl = 'mgmusic://browser?url='+encodeURIComponent(h5URL);
+            appUrl = 'mgmusic://1.0/Web?url='+noencodeH5URL;
+            break;
+          case 'ticketdetail':
+            appUrl = 'mgmusic://ticket-info?id='+id;
+            break;
+          case 'video-info':
+            appUrl = 'mgmusic://video-info?id='+id;
+            break;
+          case 'migutextcolumn':
+            var showType = this.getQueryString('showType');
+            var url = 'http://a.mll.migu.cn/app/v2/controller/common/product-details.shtml?id='+id+'&showType='+showType;
+            //appUrl = 'mgmusic://browser?url='+encodeURIComponent(url);
+            appUrl = 'mgmusic://1.0/Web?url='+noencodeH5URL;
+            break;
+          case 'ringTopic':
+
+            //programa=ringTopic&type=2&contentid=21671461
+            //var type = X.getQueryString('type',appUrl);
+            appUrl = 'mgmusic://crbt-feature-info?id='+id;
+            break;
+          default:
+            appUrl = 'mgmusic://';
+            break;
+        };
+        if(this.getOSVer()>=9 && appUrl.indexOf('mgmusic://') == 0){
+          var ulink = appUrl.substring(10);
+          location.href = "https://d.musicapp.migu.cn/applink/"+ulink;
+          return;
+        }
+      }else if(this.uais('android') ){
+
+      }
+      this.tryOpen(appUrl, fn);
+    },
+    //下载咪咕客户端,如果不指定,则下载最新版本
+    downMigu: function(os, version) {
+      var me = this;
+      var downUrl;
+      switch (os) {
+        case 'ios':
+          if (this.getOSVer() < 9 && !confirm('是否前往 App Store下载咪咕音乐')) {
+            return;
+          }
+          if (!version)
+            version = '725215315';
+          downUrl = 'http://itunes.apple.com/cn/app/mi-gu-yin-le-fei-yue-ban/id' + version + '?mt=8';
+          location.href = downUrl;
+          break;
+        case 'android':
+          //渠道来源
+          var from =''
+          if(from.indexOf('message') > -1 ){
+            from = '014002C';
+          }
+          //downUrl = 'http://wm.10086.cn/view/wap/download.do?cType=sst_client&type=down_d&cid=' + from + '&tid=' + 833;
+          downUrl = 'http://wm.10086.cn/m/'+from+'/';
+          location.href = downUrl;
+          break;
+        default:
+          if (this.uais('ios')) {
+            me.downMigu('ios');
+          } else if (this.uais('android')) {
+            me.downMigu('android');
+          } else {
+            console.log('PC电脑不执行下载')
+            //location.href = 'http://wm.10086.cn/view/wap/musicindex.do?cType=sst_client&nodeId=7638';
+            location.href = 'http://wm.10086.cn/m/014002C/';
+          }
+          return;
+      }
+    },
+    //如果已经安装咪咕App,则打开,否则下载
+    //os指定下载内容,如果为空或者不传,则自动判断当前操作系统
+    //url 唤起App后跳转到的页面
+    openOrDownMigu: function(os, url) {
+      if (os != 'ios' && os != 'android')
+        os = null;
+      var from = '';
+      if (this.uais('wx')) {
+        var isFenSheng = false;
+        if(from && from.indexOf('message') < 0 && from.indexOf('timeline') < 0 )
+          isFenSheng = true;
+        if(this.uais('android') && !isFenSheng){
+          var linkurl = 'http://a.app.qq.com/o/simple.jsp?pkgname=cmccwm.mobilemusic&android_scheme='+encodeURIComponent('migumusic://'+url);
+          window.open(linkurl);
+        }else{
+          this.showBrowserOpen();
+        }
+        return;
+      }
+      if (os && !this.uais(os) && this.getOS() != 'windows') {
+        alert('您的设备是' + this.getOS() + '系统,请选择' + this.getOS() + '版本');
+        return;
+      }
+      if(this.uais('windows')){
+        this.downMigu('window');
+        return;
+      }
+      var me = this;
+      this.openMigu(function(d) {
+        if (!d) {
+          me.downMigu(os);
+        }
+      }, url);
+    },
+    //显示在系统浏览器中打开(通常用于微信/微博/支付宝)
+    showBrowserOpen: function() {
+      var h = '' + '<style>' + '.migu-mobile-app-showBrowserOpen {position: fixed;z-index: 9999999;top: 0;left: 0;display: none; width: 100%; height: 100%; background: rgba(0,0,0,.8);}' + '.migu-mobile-app-showBrowserOpen img {float: right; max-width: 70%;margin-top: 15px; margin-right: 20px;}' + '</style>';
+      var div = this.browserOpenDiv;
+      if (!div) {
+        div = document.createElement("div");
+        div.className = "migu-mobile-app-showBrowserOpen";
+        div.onclick = function() {
+          div.style.display = "none";
+        }
+        div.innerHTML = h + '<img src="http://a.mll.migu.cn/app/v2/assets/images/tips_pop.png" />';
+        document.body.appendChild(div);
+      }
+      div.style.display = "block";
+    }
+
+  }
+
+
+
+
+
+
+</script>

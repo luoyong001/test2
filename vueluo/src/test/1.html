@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+  <script src="vue.js"></script>
+  <style>
+    .red{
+      color: red;;
+    }
+    .editing div{display: none;}
+    .editing .edit{display: block;}
+  </style>
+</head>
+<body>
+<div id="app">
+  <p>{{message}}</p>
+  <input type="text" v-model="message"/>
+</div>
+
+<div class="main">
+  <input type="text" @keyup.enter="addtodo" v-model="todo"/>
+  <br/>
+  <span v-show="!list.length">还没有list内容</span>
+  <br/>
+  <span v-show="list.length">有任务未完成</span>
+  <ul>
+    <li :class="{red:item.ischeck,editing:item===editoo}" v-for="item in list">
+      <div>
+        <input type="checkbox" v-model="item.ischeck"/>
+        <label @dblclick="edit(item)">{{item.title}}</label>
+        <button class="del" @click="del(item)"></button>
+
+      </div>
+      <input type="text" class="edit" v-model="item.title"/>
+    </li>
+  </ul>
+</div>
+
+<script src="test.js"></script>
+</body>
+</html>
